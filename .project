@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>rtlsdr-Release@rtl-sdr</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.cdt.make.core.makeBuilder</name>
+			<triggers>clean,full,incremental,</triggers>
+			<arguments>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.cleanBuildTarget</key>
+					<value>clean</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.enableCleanBuild</key>
+					<value>true</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.append_environment</key>
+					<value>true</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.stopOnError</key>
+					<value>true</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.enabledIncrementalBuild</key>
+					<value>true</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.command</key>
+					<value>/usr/bin/make</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.contents</key>
+					<value>org.eclipse.cdt.make.core.activeConfigSettings</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.target.inc</key>
+					<value>all</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.arguments</key>
+					<value></value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.buildLocation</key>
+					<value>/home/chg/rtl/rtl-sdr</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.useDefaultBuildCmd</key>
+					<value>false</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.environment</key>
+					<value>VERBOSE=1|CMAKE_NO_VERBOSE=1|</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.enableFullBuild</key>
+					<value>true</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.target.auto</key>
+					<value>all</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.enableAutoBuild</key>
+					<value>false</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.target.clean</key>
+					<value>clean</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.fullBuildTarget</key>
+					<value>all</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.buildArguments</key>
+					<value></value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.build.location</key>
+					<value>/home/chg/rtl/rtl-sdr</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.make.core.autoBuildTarget</key>
+					<value>all</value>
+				</dictionary>
+				<dictionary>
+					<key>org.eclipse.cdt.core.errorOutputParser</key>
+					<value>org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GASErrorParser;org.eclipse.cdt.core.GLDErrorParser;</value>
+				</dictionary>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>org.eclipse.cdt.make.core.ScannerConfigBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.cdt.core.ccnature</nature>
+		<nature>org.eclipse.cdt.make.core.makeNature</nature>
+		<nature>org.eclipse.cdt.make.core.ScannerConfigNature</nature>
+		<nature>org.eclipse.cdt.core.cnature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>[Subprojects]</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_adsb</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_adsb/</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_adsb/Source Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_adsb/Source Files/rtl_adsb.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/rtl_adsb.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_adsb/Header Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_adsb/CMake Rules</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_adsb/Resources</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_eeprom</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_eeprom/</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_eeprom/Source Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_eeprom/Source Files/rtl_eeprom.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/rtl_eeprom.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_eeprom/Header Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_eeprom/CMake Rules</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_eeprom/Resources</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_fm</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_fm/</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_fm/Source Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_fm/Source Files/rtl_fm.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/rtl_fm.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_fm/Header Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_fm/CMake Rules</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_fm/Resources</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_sdr</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_sdr/</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_sdr/Source Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_sdr/Source Files/rtl_sdr.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/rtl_sdr.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_sdr/Header Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_sdr/CMake Rules</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_sdr/Resources</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_tcp</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_tcp/</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_tcp/Source Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_tcp/Source Files/rtl_tcp.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/rtl_tcp.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_tcp/Header Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_tcp/CMake Rules</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_tcp/Resources</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_test</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_test/</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_test/Source Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_test/Source Files/rtl_test.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/rtl_test.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_test/Header Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_test/CMake Rules</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[exe] rtl_test/Resources</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_shared</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_shared/</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_shared/Source Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_shared/Source Files/librtlsdr.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/librtlsdr.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_shared/Source Files/tuner_e4k.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/tuner_e4k.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_shared/Source Files/tuner_fc0012.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/tuner_fc0012.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_shared/Source Files/tuner_fc0013.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/tuner_fc0013.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_shared/Source Files/tuner_fc2580.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/tuner_fc2580.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_shared/Source Files/tuner_r820t.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/tuner_r820t.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_shared/Header Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_shared/CMake Rules</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_shared/Resources</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_static</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_static/</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_static/Source Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_static/Source Files/librtlsdr.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/librtlsdr.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_static/Source Files/tuner_e4k.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/tuner_e4k.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_static/Source Files/tuner_fc0012.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/tuner_fc0012.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_static/Source Files/tuner_fc0013.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/tuner_fc0013.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_static/Source Files/tuner_fc2580.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/tuner_fc2580.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_static/Source Files/tuner_r820t.c</name>
+			<type>1</type>
+			<location>/home/chg/rtl/rtl-sdr/src/tuner_r820t.c</location>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_static/Header Files</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_static/CMake Rules</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>[Targets]/[lib] rtlsdr_static/Resources</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+	</linkedResources>
+</projectDescription>
