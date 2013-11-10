@@ -32,13 +32,15 @@
  *       scale squelch to other input parameters
  *       test all the demodulations
  *       pad output on hop
- *       nearest gain approx
  *       frequency ranges could be stored better
  *       scaled AM demod amplification
  *       auto-hop after time limit
  *       peak detector to tune onto stronger signals
  *       use slower sample rates (250k) for nbfm
  *       offset tuning
+ *       fifo for active hop frequency
+ *       clips
+ *       real squelch math
  */
 
 #include <errno.h>
@@ -46,19 +48,20 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 #ifndef _WIN32
 #include <unistd.h>
 #else
-#include <Windows.h>
+#include <windows.h>
 #include <fcntl.h>
 #include <io.h>
 #include "getopt/getopt.h"
 #define usleep(x) Sleep(x/1000)
 #define round(x) (x > 0.0 ? floor(x + 0.5): ceil(x - 0.5))
+#define _USE_MATH_DEFINES
 #endif
 
+#include <math.h>
 #include <pthread.h>
 #include <libusb.h>
 
@@ -70,6 +73,7 @@
 #define MAXIMUM_OVERSAMPLE		16
 #define MAXIMUM_BUF_LENGTH		(MAXIMUM_OVERSAMPLE * DEFAULT_BUF_LENGTH)
 #define AUTO_GAIN			-100
+#define BUFFER_DUMP			4096
 
 #define FREQUENCIES_LIMIT		1000
 
@@ -149,10 +153,16 @@ void usage(void)
 		"\t[-U enables USB mode (default: off)]\n"
 		//"\t[-D enables DSB mode (default: off)]\n"
 		"\t[-R enables raw mode (default: off, 2x16 bit output)]\n"
-		"\t[-F enables high quality FIR (default: off/square)]\n"
+		"\t[-F enables Hamming FIR (default: off/square)]\n"
 		"\t[-D enables de-emphasis (default: off)]\n"
 		"\t[-C enables DC blocking of output (default: off)]\n"
-		"\t[-A std/fast/lut choose atan math (default: std)]\n\n"
+		"\t[-A std/fast/lut choose atan math (default: std)]\n"
+		//"\t[-C clip_path (default: off)\n"
+		//"\t (create time stamped raw clips, requires squelch)\n"
+		//"\t (path must have '\%s' and will expand to date_time_freq)\n"
+		//"\t[-H hop_fifo (default: off)\n"
+		//"\t (fifo will contain the active frequency)\n"
+		"\n"
 		"Produces signed 16 bit ints, use Sox or aplay to hear them.\n"
 		"\trtl_fm ... - | play -t raw -r 24k -es -b 16 -c 1 -V1 -\n"
 		"\t             | aplay -r 24k -f S16_LE -t raw -c 1\n"
@@ -211,8 +221,8 @@ void low_pass(struct fm_state *fm, unsigned char *buf, uint32_t len)
 {
 	int i=0, i2=0;
 	while (i < (int)len) {
-		fm->now_r += ((int)buf[i]   - 128);
-		fm->now_j += ((int)buf[i+1] - 128);
+		fm->now_r += ((int)buf[i]   - 127);
+		fm->now_j += ((int)buf[i+1] - 127);
 		i += 2;
 		fm->prev_index++;
 		if (fm->prev_index < fm->downsample) {
@@ -229,17 +239,18 @@ void low_pass(struct fm_state *fm, unsigned char *buf, uint32_t len)
 }
 
 void build_fir(struct fm_state *fm)
-/* for now, a simple triangle 
- * fancy FIRs are equally expensive, so use one */
+/* hamming */
 /* point = sum(sample[i] * fir[i] * fir_len / fir_sum) */
 {
+	double a, b, w, N1;
 	int i, len;
 	len = fm->downsample;
-	for(i = 0; i < (len/2); i++) {
-		fm->fir[i] = i;
-	}
-	for(i = len-1; i >= (len/2); i--) {
-		fm->fir[i] = len - i;
+	a = 25.0/46.0;
+	b = 21.0/46.0;
+	N1 = (double)(len-1);
+	for(i = 0; i < len; i++) {
+		w = a - b*cos(2*i*M_PI/N1);
+		fm->fir[i] = (int)(w * 255);
 	}
 	fm->fir_sum = 0;
 	for(i = 0; i < len; i++) {
@@ -254,13 +265,17 @@ void low_pass_fir(struct fm_state *fm, unsigned char *buf, uint32_t len)
 	int i=0, i2=0, i3=0;
 	while (i < (int)len) {
 		i3 = fm->prev_index;
-		fm->now_r += ((int)buf[i]   - 128) * fm->fir[i3] * fm->downsample / fm->fir_sum;
-		fm->now_j += ((int)buf[i+1] - 128) * fm->fir[i3] * fm->downsample / fm->fir_sum;
+		fm->now_r += ((int)buf[i]   - 127) * fm->fir[i3];
+		fm->now_j += ((int)buf[i+1] - 127) * fm->fir[i3];
 		i += 2;
 		fm->prev_index++;
 		if (fm->prev_index < fm->downsample) {
 			continue;
 		}
+		fm->now_r *= fm->downsample;
+		fm->now_j *= fm->downsample;
+		fm->now_r /= fm->fir_sum;
+		fm->now_j /= fm->fir_sum;
 		fm->signal[i2]   = fm->now_r; //* fm->output_scale;
 		fm->signal[i2+1] = fm->now_j; //* fm->output_scale;
 		fm->prev_index = 0;
@@ -587,7 +602,8 @@ static void optimal_settings(struct fm_state *fm, int freq, int hopping)
 
 void full_demod(struct fm_state *fm)
 {
-	int i, sr, freq_next, hop = 0;
+	uint8_t dump[BUFFER_DUMP];
+	int i, sr, freq_next, n_read, hop = 0;
 	pthread_rwlock_wrlock(&data_rw);
 	rotate_90(fm->buf, fm->buf_len);
 	if (fm->fir_enable) {
@@ -629,7 +645,9 @@ void full_demod(struct fm_state *fm)
 		fm->squelch_hits = fm->conseq_squelch + 1;  /* hair trigger */
 		/* wait for settling and flush buffer */
 		usleep(5000);
-		rtlsdr_read_sync(dev, NULL, 4096, NULL);
+		rtlsdr_read_sync(dev, &dump, BUFFER_DUMP, &n_read);
+		if (n_read != BUFFER_DUMP) {
+			fprintf(stderr, "Error: bad retune.\n");}
 	}
 }
 
@@ -679,24 +697,30 @@ static void *demod_thread_fn(void *arg)
 	return 0;
 }
 
-double atofs(char* f)
+double atofs(char *f)
 /* standard suffixes */
 {
-	char* chop;
+	char last;
+	int len;
 	double suff = 1.0;
-	chop = malloc((strlen(f)+1)*sizeof(char));
-	strncpy(chop, f, strlen(f)-1);
-	switch (f[strlen(f)-1]) {
+	len = strlen(f);
+	last = f[len-1];
+	f[len-1] = '\0';
+	switch (last) {
+		case 'g':
 		case 'G':
 			suff *= 1e3;
+		case 'm':
 		case 'M':
 			suff *= 1e3;
 		case 'k':
+		case 'K':
 			suff *= 1e3;
-			suff *= atof(chop);}
-	free(chop);
-	if (suff != 1.0) {
-		return suff;}
+			suff *= atof(f);
+			f[len-1] = last;
+			return suff;
+	}
+	f[len-1] = last;
 	return atof(f);
 }
 
@@ -718,6 +742,28 @@ void frequency_range(struct fm_state *fm, char *arg)
 	}
 	stop[-1] = ':';
 	step[-1] = ':';
+}
+
+int nearest_gain(int target_gain)
+{
+	int i, err1, err2, count, close_gain;
+	int* gains;
+	count = rtlsdr_get_tuner_gains(dev, NULL);
+	if (count <= 0) {
+		return 0;
+	}
+	gains = malloc(sizeof(int) * count);
+	count = rtlsdr_get_tuner_gains(dev, gains);
+	close_gain = gains[0];
+	for (i=0; i<count; i++) {
+		err1 = abs(target_gain - close_gain);
+		err2 = abs(target_gain - gains[i]);
+		if (err2 < err1) {
+			close_gain = gains[i];
+		}
+	}
+	free(gains);
+	return close_gain;
 }
 
 void fm_init(struct fm_state *fm)
@@ -764,7 +810,7 @@ int main(int argc, char **argv)
 	pthread_rwlock_init(&data_rw, NULL);
 	pthread_mutex_init(&data_mutex, NULL);
 
-	while ((opt = getopt(argc, argv, "d:f:g:s:b:l:o:t:r:p:EFA:NWMULRDC")) != -1) {
+	while ((opt = getopt(argc, argv, "d:f:g:s:b:l:o:t:r:p:EFA:NWMULRDCh")) != -1) {
 		switch (opt) {
 		case 'd':
 			dev_index = atoi(optarg);
@@ -853,6 +899,7 @@ int main(int argc, char **argv)
 		case 'R':
 			fm.mode_demod = &raw_demod;
 			break;
+		case 'h':
 		default:
 			usage();
 			break;
@@ -941,6 +988,7 @@ int main(int argc, char **argv)
 		r = rtlsdr_set_tuner_gain_mode(dev, 0);
 	} else {
 		r = rtlsdr_set_tuner_gain_mode(dev, 1);
+		gain = nearest_gain(gain);
 		r = rtlsdr_set_tuner_gain(dev, gain);
 	}
 	if (r != 0) {
