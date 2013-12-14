@@ -42,6 +42,9 @@ AC_CHECK_LIB(m, atan2, [LIBS="$LIBS -lm"])
 dnl libmath (for rtl_adsb)
 AC_CHECK_LIB(m, sqrt, [LIBS="$LIBS -lm"])
 
+dnl libmath (for rtl_power)
+AC_CHECK_LIB(m, atan2, [LIBS="$LIBS -lm"])
+
 dnl librealtime (for rtl_test)
 AC_CHECK_LIB(rt, clock_gettime, [LIBS="$LIBS -lrt"])
 
@@ -58,7 +61,7 @@ AC_SUBST(SYMBOL_VISIBILITY)
 
 AC_MSG_CHECKING(whether compiler understands -Wall)
 old_CFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS -Wall -Wextra -Wno-unused -Wsign-compare"
+CFLAGS="$CFLAGS -Wall -Wextra -Wno-unused-parameter -Wno-unused -Wsign-compare"
 AC_TRY_COMPILE([],[],
   AC_MSG_RESULT(yes),
   AC_MSG_RESULT(no)
