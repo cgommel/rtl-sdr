@@ -37,6 +37,7 @@
 #endif
 
 #include "rtl-sdr.h"
+#include "convenience/convenience.h"
 
 #define DEFAULT_SAMPLE_RATE		2048000
 #define DEFAULT_ASYNC_BUF_NUMBER	32
@@ -52,8 +53,13 @@ static int do_exit = 0;
 static rtlsdr_dev_t *dev = NULL;
 
 static int ppm_benchmark = 0;
+static int ppm_running = 0;
 static int64_t ppm_count = 0L;
 static int64_t ppm_total = 0L;
+uint32_t samp_rate = DEFAULT_SAMPLE_RATE;
+
+long total_samples;
+long dropped_samples;
 
 #ifndef _WIN32
 static struct timespec ppm_start;
@@ -102,17 +108,15 @@ static void sighandler(int signum)
 }
 #endif
 
-static void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx)
+static void underrun_test(unsigned char *buf, uint32_t len, int mute)
 {
 	uint32_t i, lost = 0;
-	int64_t ns;
 	static uint8_t bcnt, uninit = 1;
 
 	if (uninit) {
 		bcnt = buf[0];
 		uninit = 0;
 	}
-
 	for (i = 0; i < len; i++) {
 		if(bcnt != buf[i]) {
 			lost += (buf[i] > bcnt) ? (buf[i] - bcnt) : (bcnt - buf[i]);
@@ -122,12 +126,45 @@ static void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx)
 		bcnt++;
 	}
 
+	total_samples += (long)len;
+	dropped_samples += (long)lost;
+	if (mute)
+		return;
 	if (lost)
 		printf("lost at least %d bytes\n", lost);
 
-	if (!ppm_benchmark) {
-		return;
-	}
+}
+
+static void ppm_clock_init(void)
+{
+#ifdef __APPLE__
+	gettimeofday(&tv, NULL);
+	ppm_recent.tv_sec = tv.tv_sec;
+	ppm_recent.tv_nsec = tv.tv_usec*1000;
+	ppm_start.tv_sec = tv.tv_sec;
+	ppm_start.tv_nsec = tv.tv_usec*1000;
+#elif __unix__
+	clock_gettime(CLOCK_REALTIME, &ppm_recent);
+	clock_gettime(CLOCK_REALTIME, &ppm_start);
+#endif
+}
+
+#ifndef _WIN32
+static int ppm_report(void)
+{
+	int real_rate;
+	int64_t ns;
+	ns = 1000000000L * (int64_t)(ppm_recent.tv_sec - ppm_start.tv_sec);
+	ns += (int64_t)(ppm_recent.tv_nsec - ppm_start.tv_nsec);
+	real_rate = (int)(ppm_total * 1000000000L / ns);
+	return (int)round((double)(1000000 * (real_rate - (int)samp_rate)) / (double)samp_rate);
+}
+#endif
+
+static void ppm_test(uint32_t len)
+{
+	int64_t ns;
+
 	ppm_count += (int64_t)len;
 #ifndef _WIN32
 	#ifndef __APPLE__
@@ -140,7 +177,7 @@ static void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx)
 	if (ppm_now.tv_sec - ppm_recent.tv_sec > PPM_DURATION) {
 		ns = 1000000000L * (int64_t)(ppm_now.tv_sec - ppm_recent.tv_sec);
 		ns += (int64_t)(ppm_now.tv_nsec - ppm_recent.tv_nsec);
-		printf("real sample rate: %i\n",
+		printf("real sample rate: %i",
 		(int)((1000000000L * ppm_count / 2L) / ns));
 		#ifndef __APPLE__
 		clock_gettime(CLOCK_REALTIME, &ppm_recent);
@@ -151,8 +188,24 @@ static void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx)
 		#endif
 		ppm_total += ppm_count / 2L;
 		ppm_count = 0L;
+		printf("  cumulative ppm: %i\n", ppm_report());
 	}
 #endif
+}
+
+static void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx)
+{
+	underrun_test(buf, len, 0);
+
+	if (ppm_benchmark && !ppm_running) {
+		ppm_clock_init();
+		ppm_running = 1;
+		return;
+	}
+
+	if (ppm_benchmark) {
+		ppm_test(len);
+	}
 }
 
 void e4k_benchmark(void)
@@ -211,19 +264,17 @@ int main(int argc, char **argv)
 	int i, tuner_benchmark = 0;
 	int sync_mode = 0;
 	uint8_t *buffer;
-	uint32_t dev_index = 0;
-	uint32_t samp_rate = DEFAULT_SAMPLE_RATE;
+	int dev_index = 0;
+	int dev_given = 0;
 	uint32_t out_block_size = DEFAULT_BUF_LENGTH;
-	int device_count;
 	int count;
 	int gains[100];
-	int real_rate;
-	int64_t ns;
 
 	while ((opt = getopt(argc, argv, "d:s:b:tpS::")) != -1) {
 		switch (opt) {
 		case 'd':
-			dev_index = atoi(optarg);
+			dev_index = verbose_device_search(optarg);
+			dev_given = 1;
 			break;
 		case 's':
 			samp_rate = (uint32_t)atof(optarg);
@@ -259,22 +310,15 @@ int main(int argc, char **argv)
 
 	buffer = malloc(out_block_size * sizeof(uint8_t));
 
-	device_count = rtlsdr_get_device_count();
-	if (!device_count) {
-		fprintf(stderr, "No supported devices found.\n");
+	if (!dev_given) {
+		dev_index = verbose_device_search("0");
+	}
+
+	if (dev_index < 0) {
 		exit(1);
 	}
 
-	fprintf(stderr, "Found %d device(s):\n", device_count);
-	for (i = 0; i < device_count; i++)
-		fprintf(stderr, "  %d:  %s\n", i, rtlsdr_get_device_name(i));
-	fprintf(stderr, "\n");
-
-	fprintf(stderr, "Using device %d: %s\n",
-		dev_index,
-		rtlsdr_get_device_name(dev_index));
-
-	r = rtlsdr_open(&dev, dev_index);
+	r = rtlsdr_open(&dev, (uint32_t)dev_index);
 	if (r < 0) {
 		fprintf(stderr, "Failed to open rtlsdr device #%d.\n", dev_index);
 		exit(1);
@@ -299,9 +343,7 @@ int main(int argc, char **argv)
 	fprintf(stderr, "\n");
 
 	/* Set the sample rate */
-	r = rtlsdr_set_sample_rate(dev, samp_rate);
-	if (r < 0)
-		fprintf(stderr, "WARNING: Failed to set sample rate.\n");
+	verbose_set_sample_rate(dev, samp_rate);
 
 	if (tuner_benchmark) {
 		if (rtlsdr_get_tuner_type(dev) == RTLSDR_TUNER_E4000)
@@ -316,23 +358,11 @@ int main(int argc, char **argv)
 	r = rtlsdr_set_testmode(dev, 1);
 
 	/* Reset endpoint before we start reading from it (mandatory) */
-	r = rtlsdr_reset_buffer(dev);
-	if (r < 0)
-		fprintf(stderr, "WARNING: Failed to reset buffers.\n");
+	verbose_reset_buffer(dev);
 
 	if (ppm_benchmark && !sync_mode) {
 		fprintf(stderr, "Reporting PPM error measurement every %i seconds...\n", ppm_benchmark);
 		fprintf(stderr, "Press ^C after a few minutes.\n");
-#ifdef __APPLE__
-		gettimeofday(&tv, NULL);
-		ppm_recent.tv_sec = tv.tv_sec;
-		ppm_recent.tv_nsec = tv.tv_usec*1000;
-		ppm_start.tv_sec = tv.tv_sec;
-		ppm_start.tv_nsec = tv.tv_usec*1000;
-#elif __unix__
-		clock_gettime(CLOCK_REALTIME, &ppm_recent);
-		clock_gettime(CLOCK_REALTIME, &ppm_start);
-#endif
 	}
 
 	if (!ppm_benchmark) {
@@ -344,6 +374,7 @@ int main(int argc, char **argv)
 
 	if (sync_mode) {
 		fprintf(stderr, "Reading samples in sync mode...\n");
+		fprintf(stderr, "(Samples are being lost but not reported.)\n");
 		while (!do_exit) {
 			r = rtlsdr_read_sync(dev, buffer, out_block_size, &n_read);
 			if (r < 0) {
@@ -355,6 +386,7 @@ int main(int argc, char **argv)
 				fprintf(stderr, "Short read, samples lost, exiting!\n");
 				break;
 			}
+			underrun_test(buffer, n_read, 1);
 		}
 	} else {
 		fprintf(stderr, "Reading samples in async mode...\n");
@@ -364,15 +396,12 @@ int main(int argc, char **argv)
 
 	if (do_exit) {
 		fprintf(stderr, "\nUser cancel, exiting...\n");
-		if (ppm_benchmark) {
+		fprintf(stderr, "Samples per million lost (minimum): %i\n", (int)(1000000L * dropped_samples / total_samples));
 #ifndef _WIN32
-			ns = 1000000000L * (int64_t)(ppm_recent.tv_sec - ppm_start.tv_sec);
-			ns += (int64_t)(ppm_recent.tv_nsec - ppm_start.tv_nsec);
-			real_rate = (int)(ppm_total * 1000000000L / ns);
-			printf("Cumulative PPM error: %i\n",
-			(int)round((double)(1000000 * (real_rate - (int)samp_rate)) / (double)samp_rate));
-#endif
+		if (ppm_benchmark) {
+			printf("Cumulative PPM error: %i\n", ppm_report());
 		}
+#endif
 	}
 	else
 		fprintf(stderr, "\nLibrary error %d, exiting...\n", r);
